@@ -2,15 +2,27 @@ express=require("express");
 
 app=express();
 
-app.use("/",(req,res)=>
+// app.use("/user",(req,res)=>{
+//     res.send("ladle ghop ghop ghop");
+// })
+
+app.get("/user",(req,res)=>
 {
-    res.send("this is home page");
+    res.send({"firstname":"mahesh","lastname":"gite"});
 })
 
-app.use("/login", (req,res)=>{
-    res.send("login page");
+app.post("/user",(req,res)=>
+{
+    res.send("user data saved successfully");
 })
+
+app.delete("/user",(req,res)=>
+{
+    res.send("user data deleted successfully");
+})
+
 
 app.listen(7777,()=>{
     console.log("server is listening on port 7777.......");
 })
+
