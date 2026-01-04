@@ -7,27 +7,66 @@ const {connectDB}=require("./config/database");
 
 app=express();
 
+app.use(express.json());//inbuild middleware of express to read data in the body 
+
 app.post("/signup",async (req,res)=>{
-
-    //creating the new instance of User model 
-    const user=new User(
-        {
-        firstName:"avi",
-        lastName:"Gamer",
-        emailID:"gamer@gmail.com",
-        password:"game@123"
-       
-    }
-    );
-
+    
   try {
-    await user.save();//save in the database
+    await User.create(
+        req.body
+    );
     res.status(201).send("data saved successfully");
 } catch (err) {
     res.status(500).send(err.message);
 }
 
 })
+
+app.get("/user",async (req,res)=>{
+    
+    try{
+        const user=await User.findOne(req.body);
+        if(user.length==0)
+        {
+             res.status(404).send("user not found");
+        }
+        else
+        {
+            res.send(user);
+        }
+    }
+    catch(err)
+    {
+        res.status(404).send("user not found");
+    }
+
+})
+
+app.get("/feed",async (req,res)=>{
+    
+    try{
+        const user=await User.find();
+        res.send(user);
+    }
+    catch(err)
+    {
+        res.status(404).send("user not found");
+    }
+
+})
+
+app.get("/user/:id",async (req,res)=>
+{
+    try{
+        const user=await User.findById(req.params.id);
+        res.send(user);
+    }
+    catch(err)
+    {
+        res.status(404).send("user not found");
+    }
+})
+
 
 connectDB().then(()=>{
     console.log("Database connection estabilished....");
