@@ -9,6 +9,18 @@ app=express();
 
 app.use(express.json());//inbuild middleware of express to read data in the body 
 
+app.delete("/delete",async (req,res)=>{
+    try
+    {
+        await User.findByIdAndDelete(req.body);
+        res.send("delete user successfully");
+    }
+    catch(err)
+    {
+        res.status(404).send("user not found");
+    }
+})
+
 app.post("/signup",async (req,res)=>{
     
   try {
@@ -67,6 +79,18 @@ app.get("/user/:id",async (req,res)=>
     }
 })
 
+
+app.put("/update",async (req,res)=>{
+    try
+    {
+        await User.findByIdAndUpdate(req.body, {firstName:"Rangit",lastName:"ranga"});
+        res.send("user updated successfully");
+    }
+    catch(err)
+    {
+        res.status(404).send("user not found");
+    }
+})
 
 connectDB().then(()=>{
     console.log("Database connection estabilished....");
