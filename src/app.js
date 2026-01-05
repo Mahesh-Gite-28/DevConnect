@@ -80,17 +80,27 @@ app.get("/user/:id",async (req,res)=>
 })
 
 
-app.put("/update",async (req,res)=>{
-    try
-    {
-        await User.findByIdAndUpdate(req.body, {firstName:"Rangit",lastName:"ranga"});
-        res.send("user updated successfully");
+app.patch("/user/:id", async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,   // 🔹 ID from URL
+      req.body,        // 🔹 Only fields to update
+      {
+        runValidators: true, // 🔥 schema validation ON
+        new: true            // 🔥 return updated document
+      }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
-    catch(err)
-    {
-        res.status(404).send("user not found");
-    }
-})
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 
 connectDB().then(()=>{
     console.log("Database connection estabilished....");
