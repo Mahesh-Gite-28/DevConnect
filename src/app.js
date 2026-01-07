@@ -4,12 +4,18 @@ const User=require("./Models/User");
 
 const bcrypt=require("bcrypt");
 
+const cookieParser=require("cookie-parser")
+
 const validateSignUpData=require("./utils/validation");
+
+const jwt=require("jsonwebtoken");
 
 const {connectDB}=require("./config/database");
 // const {auth,userauth} = require("./middlewares/auth");
 
 app=express();
+
+app.use(cookieParser());//helps to read the cookie
 
 app.use(express.json());//inbuild middleware of express to read data in the body 
 
@@ -37,12 +43,17 @@ app.post("/login" ,async (req,res)=>{
             throw new Error("Invalid Credentials");
         }
 
-        console.log(user.password);
-        console.log(password);
-
         const isPassvalid=await bcrypt.compare(password,user.password);
 
         if(isPassvalid){
+
+            //create JWT token 
+            const token=
+
+            //insert token into cookie and send to client 
+
+            res.cookie("token","jfaklsjdfjaiosjfisodnfoisjd");
+
             res.send("login successfull")
         }
         else{
@@ -56,6 +67,18 @@ app.post("/login" ,async (req,res)=>{
 
 })
 
+
+app.get("/profile" ,(req,res)=>{
+
+    const {token}=req.cookies;
+
+    console.log(token);
+
+    //is token valid or not check 
+
+    res.send("profile of the user");
+})
+
 app.post("/signup",async (req,res)=>{
   try {
     //validation
@@ -66,6 +89,7 @@ app.post("/signup",async (req,res)=>{
 
     const hashpass=await bcrypt.hash(password,10);//password encryption
 
+    //create + save 
     await User.create(
 
         {firstName:firstName,
