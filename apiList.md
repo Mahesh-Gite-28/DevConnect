@@ -14,10 +14,4 @@
 -POST /request/review/accepted/:requestID
 -POST /request/review/rejected/:requestID
 
--GET /connections
--GET /requests/recieved
--GET /feed -Gets you the profiles of other users on platform 
-
-
-
-status: ignore, interested ,accepted,rejected 
+ESDS Software Solution Limited
