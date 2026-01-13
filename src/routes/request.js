@@ -4,14 +4,35 @@ const requestRouter=express.Router();
 
 const userauth=require("../middlewares/auth");
 
-requestRouter.post("/sendConnectionRequest",userauth,(req,res)=>{
+const ConnectionRequest=require("../Models/connectionRequest");
 
-    const user=req.user;
+requestRouter.post(
+  "/request/send/:status/:touserId",
+  userauth,
+  async (req, res) => {
+    try {
+      const fromID = req.user._id;
+      const toID = req.params.touserId;
+      const status = req.params.status;
 
-    console.log("sending connection request");
+      const Connection = new ConnectionRequest({
+        fromUserId: fromID,
+        toUserId: toID,
+        status,
+      });
 
-    res.send(user.firstName+" sent the connection request");
-})
+      const data = await Connection.save();
+
+      res.status(201).json({
+        message: "Connection Request Sent Successfully!",
+        data,
+      });
+    } catch (err) {
+      console.error(err); // 👈 IMPORTANT
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
 
 
 module.exports=requestRouter;
