@@ -94,6 +94,7 @@ userRouter.get("/feed", userauth, async (req, res) => {
     const feed = await User.find({
       _id: { $nin: Array.from(hideUsersFromFeed) },
     }).select(USER_SAFE_DATA).skip(skip).limit(limit);
+    
 
     res.send(feed);
 

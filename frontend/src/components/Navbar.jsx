@@ -4,7 +4,6 @@ import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { removeUser } from "../utils/userSlice";
-import { Navigate } from "react-router-dom";
 
 
 const Navbar = () => {
@@ -20,7 +19,7 @@ const Navbar = () => {
 
     }catch(err)
     {
-      console.log(err);
+      console.log(err);//handlelogout --->pop out something 
     }
   }
 

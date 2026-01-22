@@ -8,28 +8,24 @@ import { BASE_URL } from "../utils/constants";
 const Login = () => {
   const [emailID, setemailID] = useState("nami.navigator99@gmail.com");
   const [password, setpassword] = useState("Nami@789");
-  const [error,Seterror]=useState("");
+  const [error, Seterror] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
 
   const onloginhandler = async () => {
     try {
       const res = await axios.post(
         BASE_URL + "/login",
         { emailID, password },
-        {withCredentials:true}
+        { withCredentials: true },
       );
 
       dispatch(addUser(res.data));
 
       //navigate to feed page
       navigate("/feed");
-
     } catch (error) {
-
-      Seterror(error?.response?.data|| "something went wrong");
-      
+      Seterror(error?.response?.data || "something went wrong");
     }
   };
 

@@ -23,15 +23,15 @@ const Layout = () => {
       });
 
       dispatch(addUser(user.data));
-    } catch (err) {
+    } 
+    catch (err) {
 
       if(err.status==401)
       {
-        
         navigate("/login");
       }
 
-      console.log(err);//show popup or something //means token is invalid or not present
+      // console.log(err);//show popup or something //means token is invalid or not present
       
     }
   };
