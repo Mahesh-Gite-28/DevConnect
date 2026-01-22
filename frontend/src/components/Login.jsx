@@ -3,41 +3,39 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
-import {BASE_URL} from "../utils/constants"
+import { BASE_URL } from "../utils/constants";
 
 const Login = () => {
   const [emailID, setemailID] = useState("nami.navigator99@gmail.com");
   const [password, setpassword] = useState("Nami@789");
-  const dispatch=useDispatch();
-  const navigate=useNavigate();
+  const [error,Seterror]=useState("");
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
 
   const onloginhandler = async () => {
-
     try {
       const res = await axios.post(
         BASE_URL + "/login",
         { emailID, password },
-        { withCredentials: true }
+        {withCredentials:true}
       );
 
-      //dispatch an action
       dispatch(addUser(res.data));
 
       //navigate to feed page
       navigate("/feed");
 
     } catch (error) {
-      console.error(
-        "Login failed:",
-        error.response?.data || error.message
-      );
+
+      Seterror(error?.response?.data|| "something went wrong");
+      
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="card w-[380px] bg-base-200 shadow-xl p-6">
-
         <h2 className="text-3xl font-bold text-center mb-6">
           <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
             Welcome Back
@@ -70,14 +68,13 @@ const Login = () => {
             onChange={(e) => setpassword(e.target.value)}
           />
         </div>
-
+        <p className="text-red-500">{error}</p>
         <button
-          className="btn btn-primary w-full mt-5"
+          className="btn btn-primary w-full mt-5 my-2"
           onClick={onloginhandler}
         >
           Login
         </button>
-
       </div>
     </div>
   );
