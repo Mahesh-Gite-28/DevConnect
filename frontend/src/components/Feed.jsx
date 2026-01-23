@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { addfeed } from "../utils/feedSlice";
 import { useSelector } from "react-redux";
+import UserCard from "./UserCard";
 
 const Feed = () => {
   const dispatch = useDispatch();
@@ -32,7 +33,11 @@ const Feed = () => {
     }  
   }, []);
 
-  return <div>Feed</div>;
+  return <div>
+    
+    <UserCard data={feed[0]}/>
+    
+    </div>;
 };
 
 export default Feed;

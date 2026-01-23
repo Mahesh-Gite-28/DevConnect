@@ -54,6 +54,7 @@ const userSchema = new mongoose.Schema(
 
     photoUrl: {
       type: String,
+      default:"https://img.freepik.com/free-vector/user-blue-gradient_78370-4692.jpg",
       validate: {
         validator: value => !value || validator.isURL(value),
         message: "Invalid photo URL"

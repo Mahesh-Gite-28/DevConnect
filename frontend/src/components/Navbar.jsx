@@ -56,7 +56,7 @@ const Navbar = () => {
                 <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                   <img
                     alt="profile"
-                    src="https://img.freepik.com/free-vector/user-blue-gradient_78370-4692.jpg"
+                    src={user.photoUrl}
                   />
                 </div>
               )}
