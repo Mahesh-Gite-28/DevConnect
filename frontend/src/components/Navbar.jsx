@@ -5,6 +5,7 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { removeUser } from "../utils/userSlice";
 import { removefeed } from "../utils/feedSlice";
+import { removeconnections } from "../utils/connectionSlice";
 
 
 const Navbar = () => {
@@ -17,6 +18,7 @@ const Navbar = () => {
       await axios.post(BASE_URL+"/logout",{},{withCredentials:true});
       dispatch(removeUser());
       dispatch(removefeed());
+      dispatch(removeconnections());
       return navigate("/login");
 
     }catch(err)
@@ -78,7 +80,10 @@ const Navbar = () => {
               </Link>
             </li>
             <li>
-              <a>Settings</a>
+              <Link to={"/connections"}>Connections</Link>
+            </li>
+            <li>
+              <Link to={"/requests"}>Requests</Link>
             </li>
             <li >
               <button className="text-error font-medium" onClick={handleLogout}>Logout</button>
