@@ -18,55 +18,56 @@ requestRouter.post(
       const status = req.params.status;
 
       const allowedStatus = ["ignored", "interested"];
-
       if (!allowedStatus.includes(status)) {
         return res
           .status(400)
           .json({ message: "Invalid status type: " + status });
       }
 
-      const user=await User.findById(toUserId);
-
-      if(!user){
-        return res.send("the user not exist");
+      // ❌ self-request block
+      if (fromUserId.toString() === toUserId.toString()) {
+        return res
+          .status(400)
+          .json({ message: "You cannot send request to yourself" });
       }
-      
-      //if there is an existing connectionRequest
-      const existingConnectionRequest = await ConnectionRequest.findOne(
-       {
-        $or:[
-          {
-            fromUserId,toUserId
-          },
-          {
-            fromUserId:toUserId,
-            toUserId:fromUserId
-          }
-        ]
-       }
-    );
 
-    if(existingConnectionRequest){
-      return res.send("unable to send the request");
-    }
-      const Connection = new ConnectionRequest({
+      const user = await User.findById(toUserId);
+      if (!user) {
+        return res.status(404).json({ message: "Target user does not exist" });
+      }
+
+      // 🔒 HARD DUPLICATE BLOCK (both directions)
+      const existingConnectionRequest = await ConnectionRequest.findOne({
+        $or: [
+          { fromUserId, toUserId },
+          { fromUserId: toUserId, toUserId: fromUserId }
+        ]
+      });
+
+      if (existingConnectionRequest) {
+        return res.status(400).json({
+          message: "Connection request already exists between these users"
+        });
+      }
+
+      const connection = await ConnectionRequest.create({
         fromUserId,
         toUserId,
-        status,
+        status
       });
-
-      const data = await Connection.save();
 
       res.status(201).json({
-        message: req.user.firstName+" is "+status+" in "+user.firstName,
-        data,
+        message: req.user.firstName + " is " + status + " in " + user.firstName,
+        data: connection
       });
     } catch (err) {
-      console.error(err);
+      console.error("SEND REQUEST ERROR:", err);
       res.status(400).json({ error: err.message });
     }
   }
 );
+
+
 
 
 requestRouter.post("/request/review/:status/:requestId",userauth,async(req,res)=>{
