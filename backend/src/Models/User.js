@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
+const {DEFAULT_PROFILE_PHOTO, JWT_TOKEN_EXPIRESIN, BCRYPT_SALT_ROUNDS }=require("../utils/constants")
 
 const userSchema = new mongoose.Schema(
   {
@@ -54,7 +56,7 @@ const userSchema = new mongoose.Schema(
 
     photoUrl: {
       type: String,
-      default:"https://img.freepik.com/free-vector/user-blue-gradient_78370-4692.jpg",
+      default:DEFAULT_PROFILE_PHOTO,
       validate: {
         validator: value => !value || validator.isURL(value),
         message: "Invalid photo URL"
@@ -82,14 +84,14 @@ const userSchema = new mongoose.Schema(
 userSchema.methods.getjwt=async function(){
 
   const user=this;
-  const token=await jwt.sign({_id:user._id},"Devtinder$790",{expiresIn:'7d'});
+  const token=await jwt.sign({_id:user._id},"Devtinder$790",{expiresIn:JWT_TOKEN_EXPIRESIN});
   
   return token;
 }
 
 
 userSchema.methods.gethash=async function (){
-  const hashpass=await bcrypt.hash(this.password,10);
+  const hashpass=await bcrypt.hash(this.password,BCRYPT_SALT_ROUNDS);
 
   return hashpass;
 }

@@ -18,7 +18,7 @@ authRouter.post("/signup", async (req, res) => {
     const token = await user.getjwt();
 
     res.cookie("token", token, {
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expires: new Date(Date.now() + 8 * 3600000),
       httpOnly: true,
       sameSite: "lax",
     });
