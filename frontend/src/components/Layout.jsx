@@ -7,12 +7,10 @@ import { useEffect } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
-import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Layout = () => {
   const dispatch = useDispatch();
-  const navigate=useNavigate();
   
   const userdata=useSelector((store)=>store.user);
 
