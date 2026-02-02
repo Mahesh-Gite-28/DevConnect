@@ -9,8 +9,7 @@ import { removeconnections } from "../utils/connectionSlice";
 import { removeRequests } from "../utils/requestSlice";
 import toast from "react-hot-toast";
 
-
-import { Home, User, Users, Inbox, LogOut } from "lucide-react";
+import { Home, User, Users, Inbox, LogOut,Crown } from "lucide-react";
 
 const Navbar = () => {
   const user = useSelector((store) => store.user);
@@ -33,8 +32,6 @@ const Navbar = () => {
 
   return (
     <div className="navbar bg-black border-b border-slate-800 px-6 fixed top-0 z-[1000]">
-
-      
       <div className="flex-1">
         <Link
           className="flex items-center gap-3 w-fit"
@@ -56,9 +53,7 @@ const Navbar = () => {
       {user && (
         <div className="flex items-center gap-4">
           <div className="dropdown dropdown-end">
-
             <div className="flex items-center gap-3">
-
               <p className="text-sm font-medium whitespace-nowrap text-slate-400 hidden sm:block">
                 Welcome,{" "}
                 <span className="text-white font-semibold">
@@ -75,15 +70,12 @@ const Navbar = () => {
                   <img alt="profile" src={user.photoUrl} />
                 </div>
               </div>
-
             </div>
 
-            
             <ul
               tabIndex={0}
               className="menu menu-sm dropdown-content mt-3 w-52 rounded-xl bg-slate-950 p-2 shadow-xl border border-slate-800"
             >
-              
               <li>
                 <Link
                   to={"/feed"}
@@ -111,7 +103,6 @@ const Navbar = () => {
                 </Link>
               </li>
 
-              
               <li>
                 <Link
                   to={"/connections"}
@@ -122,7 +113,6 @@ const Navbar = () => {
                 </Link>
               </li>
 
-              
               <li>
                 <Link
                   to={"/requests"}
@@ -133,7 +123,16 @@ const Navbar = () => {
                 </Link>
               </li>
 
-             
+              <li>
+                <Link
+                  to={"/memberships"}
+                  className="hover:bg-emerald-500 hover:text-black"
+                >
+                  <Crown size={16} className="mr-2" />
+                  Memberships
+                </Link>
+              </li>
+
               <li>
                 <button
                   className="text-rose-400 font-medium hover:bg-rose-500 hover:text-white"
@@ -146,7 +145,6 @@ const Navbar = () => {
                 </button>
               </li>
             </ul>
-
           </div>
         </div>
       )}

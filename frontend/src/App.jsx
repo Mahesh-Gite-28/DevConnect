@@ -8,6 +8,8 @@ import Request from "./components/Request";
 import { Toaster } from "react-hot-toast";  
 import Error from "./components/Error"; 
 import Home from "./components/Home";   
+import Memberships from "./components/Memberships";
+
 function App() {
   return (
     <>
@@ -24,6 +26,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="connections" element={<Connections />} />
           <Route path="requests" element={<Request />} />
+          <Route path="memberships" element={<Memberships />} />
 
           <Route path="*" element={<Error />} />
         </Route>
