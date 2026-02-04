@@ -20,8 +20,25 @@ profileRouter.patch("/profile/edit", userauth, async (req, res) => {
 
     const loggedInUser = req.user;
 
+    const allowedFields = [
+      "firstName",
+      "lastName",
+      "age",
+      "gender",
+      "photoUrl",
+      "skills",
+      "about"
+    ];
+
     Object.keys(req.body).forEach((field) => {
-      loggedInUser[field] = req.body[field];
+      if (
+        allowedFields.includes(field) &&
+        req.body[field] !== "" &&
+        req.body[field] !== null &&
+        req.body[field] !== undefined
+      ) {
+        loggedInUser[field] = req.body[field];
+      }
     });
 
     await loggedInUser.save();
@@ -31,13 +48,11 @@ profileRouter.patch("/profile/edit", userauth, async (req, res) => {
       data: loggedInUser,
     });
   } catch (err) {
-  console.log("EDIT PROFILE ERROR:", err);
-
-  res.status(400).json({
-    error: err.message || "Profile update failed",
-  });
-}
-
+    console.log("EDIT PROFILE ERROR:", err);
+    res.status(400).json({
+      error: err.message || "Profile update failed",
+    });
+  }
 });
 
 
