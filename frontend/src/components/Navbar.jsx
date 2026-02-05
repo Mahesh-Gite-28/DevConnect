@@ -9,7 +9,7 @@ import { removeconnections } from "../utils/connectionSlice";
 import { removeRequests } from "../utils/requestSlice";
 import toast from "react-hot-toast";
 
-import { Home, User, Users, Inbox, LogOut,Crown } from "lucide-react";
+import { Home, User, Users, Inbox, LogOut, Crown} from "lucide-react";
 
 const Navbar = () => {
   const user = useSelector((store) => store.user);
@@ -26,6 +26,7 @@ const Navbar = () => {
       toast.success("Logged out successfully");
       return navigate("/login");
     } catch (err) {
+      console.error("Logout error:", err);  
       toast.error("Logout failed");
     }
   };

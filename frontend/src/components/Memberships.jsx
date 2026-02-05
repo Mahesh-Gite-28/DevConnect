@@ -13,7 +13,8 @@ const handleBuyClick = async (planType) => {
     
     window.location.href = order.data.url;
     
-  } catch (err) {
+  } catch (error) {
+    console.error("Payment initiation error:", error);
     toast.error("Something went wrong");
   }
 };

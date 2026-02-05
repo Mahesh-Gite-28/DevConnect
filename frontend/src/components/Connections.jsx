@@ -3,6 +3,7 @@ import { BASE_URL } from "../utils/constants";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { addconnections } from "../utils/connectionSlice";
+import { Link } from "react-router-dom";
 
 const Connections = () => {
   const dispatch = useDispatch();
@@ -12,10 +13,9 @@ const Connections = () => {
 
   const myconnections = async () => {
     try {
-      const getconnections = await axios.get(
-        BASE_URL + "/user/connections",
-        { withCredentials: true }
-      );
+      const getconnections = await axios.get(BASE_URL + "/user/connections", {
+        withCredentials: true,
+      });
 
       dispatch(addconnections(getconnections?.data?.data || []));
     } catch (err) {
@@ -39,16 +39,11 @@ const Connections = () => {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-base-200 p-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        Connections
-      </h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Connections</h2>
 
       <div className="max-w-3xl mx-auto flex flex-col gap-4">
-
         {userconnection.length === 0 && (
-          <p className="text-center text-gray-500">
-            No connections yet
-          </p>
+          <p className="text-center text-gray-500">No connections yet</p>
         )}
 
         {userconnection.map((connection) => (
@@ -61,7 +56,6 @@ const Connections = () => {
               alt="profile"
               className="w-16 h-16 rounded-full object-cover border"
             />
-
             <div className="flex-1">
               <h3 className="text-lg font-semibold">
                 {connection.firstName} {connection.lastName}
@@ -74,10 +68,7 @@ const Connections = () => {
               {connection.skills?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {connection.skills.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="badge badge-outline badge-sm"
-                    >
+                    <span key={idx} className="badge badge-outline badge-sm">
                       {skill}
                     </span>
                   ))}
@@ -90,9 +81,12 @@ const Connections = () => {
                 </p>
               )}
             </div>
+
+            <Link to={`/chat/${connection._id}`}>
+              <button className="btn btn-sm btn-secondary">Chat</button>
+            </Link>
           </div>
         ))}
-
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import Home from "./components/Home";
 import Memberships from "./components/Memberships";
 import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFailed from "./components/PaymentFailed";
+import Chat from "./components/Chat";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="memberships" element={<Memberships />} />
           <Route path="payment-success" element={<PaymentSuccess />} />
           <Route path="payment-cancel" element={<PaymentFailed />} />
+          <Route path="chat/:id" element={<Chat />} />
 
           <Route path="*" element={<Error />} />
         </Route>
