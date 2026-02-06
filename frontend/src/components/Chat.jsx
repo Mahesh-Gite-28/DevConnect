@@ -1,54 +1,93 @@
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { createSocketConnection } from "../utils/socket";
+import { useSelector } from "react-redux";
 
 const Chat = () => {
-  const { id } = useParams();
+  const user = useSelector((store) => store.user);
+
+  const userId = user?._id;
+  const firstName = user?.firstName;
+  const { targetUserid } = useParams();
+
+  const [messages, setMessages] = useState([]);
+  const [newMsg, setNewMsg] = useState("");
+
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    socketRef.current = createSocketConnection();
+
+    socketRef.current.emit("joinChat", {
+      firstName,
+      userId,
+      targetUserid,
+    });
+
+    socketRef.current.on("receiveMessage", (data) => {
+      setMessages((prev) => [...prev, data]);
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [userId, targetUserid]);
+
+  const sendMessage = () => {
+    if (!newMsg.trim()) return;
+
+    socketRef.current.emit("sendMessage", {
+      userId,
+      targetUserid,
+      newMsg,
+    });
+
+    // instantly show own message
+    setMessages((prev) => [
+      ...prev,
+      { senderId: userId, message: newMsg },
+    ]);
+
+    setNewMsg("");
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-black to-neutral-900 flex items-center justify-center px-4">
-      
-      {/* Chat Container */}
-      <div className="w-full max-w-4xl h-[85vh] bg-neutral-800 rounded-2xl shadow-xl flex flex-col overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-black text-white">
+      <div className="w-full max-w-xl bg-neutral-800 rounded-xl p-4 flex flex-col h-[80vh]">
 
-        {/* Header */}
-        <div className="h-16 bg-neutral-900 flex items-center px-6 border-b border-neutral-700">
-          <div className="w-10 h-10 bg-neutral-700 rounded-full mr-4"></div>
-          <div>
-            <h2 className="text-white font-semibold">User Name</h2>
-            <p className="text-sm text-neutral-400">Online</p>
-          </div>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto space-y-3">
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`p-2 rounded-lg max-w-xs ${
+                msg.senderId === userId
+                  ? "bg-blue-600 ml-auto"
+                  : "bg-neutral-600"
+              }`}
+            >
+              {msg.message}
+            </div>
+          ))}
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-
-          {/* Incoming Message */}
-          <div className="flex">
-            <div className="bg-neutral-700 text-white px-4 py-2 rounded-xl max-w-xs">
-              Hello 👋
-            </div>
-          </div>
-
-          {/* Outgoing Message */}
-          <div className="flex justify-end">
-            <div className="bg-blue-600 text-white px-4 py-2 rounded-xl max-w-xs">
-              Hi! How are you?
-            </div>
-          </div>
-
-        </div>
-
-        {/* Input Area */}
-        <div className="h-16 bg-neutral-900 border-t border-neutral-700 flex items-center px-4 gap-3">
+        {/* Input */}
+        <div className="flex gap-2 mt-4">
           <input
-            type="text"
-            placeholder="Type a message..."
-            className="flex-1 bg-neutral-700 text-white px-4 py-2 rounded-lg focus:outline-none"
+            value={newMsg}
+            onChange={(e) => setNewMsg(e.target.value)}
+            className="flex-1 p-2 rounded bg-neutral-700"
+            placeholder="Type message..."
           />
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+          <button
+            onClick={sendMessage}
+            className="bg-blue-600 px-4 rounded"
+          >
             Send
           </button>
         </div>
-
       </div>
     </div>
   );

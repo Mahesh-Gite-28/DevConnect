@@ -30,7 +30,7 @@ function App() {
           <Route path="memberships" element={<Memberships />} />
           <Route path="payment-success" element={<PaymentSuccess />} />
           <Route path="payment-cancel" element={<PaymentFailed />} />
-          <Route path="chat/:id" element={<Chat />} />
+          <Route path="chat/:targetUserid" element={<Chat />} />
 
           <Route path="*" element={<Error />} />
         </Route>

@@ -1,59 +1,63 @@
 require("dotenv").config();
 
-express=require("express");
+express = require("express");
 
 const cors = require("cors");
 
-const cookieParser=require("cookie-parser");
+const cookieParser = require("cookie-parser");
 
-const {connectDB}=require("./config/database");
+const { connectDB } = require("./config/database");
 
 const paymentWebhookHandler = require("./routes/paymentWebhookHandler");
 
-app=express();//server
+const initiallizeSocket = require("./utils/socket");
+
+const http = require("http");
+
+app = express(); //server
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,//frontend link 
+    origin: process.env.FRONTEND_URL, //frontend link
     credentials: true,
-  })
+  }),
 );
 
 app.post(
-    "/payment/webhook",
-    express.raw({ type: "application/json" }),
-    paymentWebhookHandler
+  "/payment/webhook",
+  express.raw({ type: "application/json" }),
+  paymentWebhookHandler,
 );
 
-app.use(cookieParser());//helps to read the cookie
+app.use(cookieParser()); //helps to read the cookie
 
-app.use(express.json());//inbuild middleware of express to read data in the body 
+app.use(express.json()); //inbuild middleware of express to read data in the body
 
-
-const authRouter=require("./routes/auth");
-const profileRouter=require("./routes/profile");
-const requestRouter=require("./routes/request");
-const userRouter=require("./routes/user");
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
 const paymentRouter = require("./routes/payment");
 
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
+app.use("/", paymentRouter);
 
-app.use("/",authRouter);
-app.use("/",profileRouter);
-app.use("/",requestRouter);
-app.use("/",userRouter);
-app.use("/",paymentRouter);
+const server = http.createServer(app);
 
-connectDB().then(()=>{
+initiallizeSocket(server);
+
+connectDB()
+  .then(() => {
     console.log("Database connection estabilished....");
-    app.listen(process.env.PORT,()=>{
-    console.log("server is listening on port "+process.env.PORT+"........");
-})
-}).catch((err)=>{
+    server.listen(process.env.PORT, () => {
+      console.log(
+        "server is listening on port " + process.env.PORT + "........",
+      );
+    });
+  })
+  .catch((err) => {
     console.error("Database cannot be connected");
-})
-
-
-
-
-
-
+  });
