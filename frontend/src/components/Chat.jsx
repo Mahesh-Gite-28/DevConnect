@@ -2,53 +2,68 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { createSocketConnection } from "../utils/socket";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { BASE_URL } from "../utils/constants";
 
 const Chat = () => {
   const user = useSelector((store) => store.user);
-
   const userId = user?._id;
   const { targetUserid } = useParams();
 
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
-
   const socketRef = useRef(null);
 
+  // ✅ 1️⃣ Load old messages from DB when chat opens
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !targetUserid) return;
 
-    // 🔥 Create socket connection
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/chat/${targetUserid}`,
+          { withCredentials: true }
+        );
+
+        const formattedMessages = res.data.map((msg) => ({
+          senderId: msg.senderId,
+          message: msg.text,
+        }));
+
+        setMessages(formattedMessages);
+      } catch (err) {
+        console.error("Fetch chat error:", err.message);
+      }
+    };
+
+    fetchMessages();
+  }, [userId, targetUserid]);
+
+  // ✅ 2️⃣ Setup socket connection
+  useEffect(() => {
+    if (!userId || !targetUserid) return;
+
     socketRef.current = createSocketConnection();
 
-    // 🔥 Join room (ONLY targetUserId send)
-    socketRef.current.emit("joinChat", {
-      targetUserid,
-    });
+    socketRef.current.emit("joinChat", { targetUserid });
 
-    // 🔥 Listen for messages
     socketRef.current.on("receiveMessage", (data) => {
       setMessages((prev) => [...prev, data]);
     });
 
     return () => {
-      socketRef.current.disconnect();
+      socketRef.current?.disconnect();
     };
   }, [userId, targetUserid]);
 
+  // ✅ 3️⃣ Send message
   const sendMessage = () => {
     if (!newMsg.trim()) return;
 
-    // 🔥 Send message (NO userId here)
     socketRef.current.emit("sendMessage", {
       targetUserid,
       newMsg,
     });
-
-    // 🔥 Instantly show own message
-    setMessages((prev) => [
-      ...prev,
-      { senderId: userId, message: newMsg },
-    ]);
 
     setNewMsg("");
   };
@@ -63,7 +78,7 @@ const Chat = () => {
             <div
               key={index}
               className={`p-2 rounded-lg max-w-xs ${
-                msg.senderId === userId
+                msg.senderId?.toString() === userId?.toString()
                   ? "bg-blue-600 ml-auto"
                   : "bg-neutral-600"
               }`}
