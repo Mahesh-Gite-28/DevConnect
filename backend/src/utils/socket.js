@@ -2,40 +2,55 @@ const socket = require("socket.io");
 const socketAuth = require("../middlewares/socketAuth");
 const Chat = require("../Models/chat");
 
-const initiallizeSocket = (server) => {
+const onlineUsers = new Map(); 
+// Map<userId, Set<socketId>>
+
+const initializeSocket = (server) => {
   const io = socket(server, {
     cors: {
       origin: process.env.FRONTEND_URL,
-      credentials: true, // 🔥 VERY IMPORTANT
+      credentials: true,
     },
   });
 
-  // 🔐 Apply Authentication Middleware
   io.use(socketAuth);
 
   io.on("connection", (socket) => {
+    const userId = socket.user._id.toString();
 
-    socket.on("joinChat", ({ targetUserid }) => {
-      const userId = socket.user._id; // 🔥 NEVER trust frontend
+    // ==============================
+    // ✅ ONLINE LOGIC (Multi-tab Safe)
+    // ==============================
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+    }
 
-      const roomId = [userId, targetUserid].sort().join("_");
+    onlineUsers.get(userId).add(socket.id);
 
-      socket.join(roomId);
-
+    io.emit("userStatusChanged", {
+      userId,
+      online: true,
     });
 
+    // ==============================
+    // 🔥 JOIN CHAT ROOM
+    // ==============================
+    socket.on("joinChat", ({ targetUserid }) => {
+      const roomId = [userId, targetUserid].sort().join("_");
+      socket.join(roomId);
+    });
+
+    // ==============================
+    // 💬 SEND MESSAGE
+    // ==============================
     socket.on("sendMessage", async ({ targetUserid, newMsg }) => {
       try {
-        const userId = socket.user._id;
-
         const roomId = [userId, targetUserid].sort().join("_");
 
-        // 🔎 Find existing chat
         let chat = await Chat.findOne({
           participants: { $all: [userId, targetUserid] },
         });
 
-        // 🆕 If no chat, create one
         if (!chat) {
           chat = new Chat({
             participants: [userId, targetUserid],
@@ -43,7 +58,6 @@ const initiallizeSocket = (server) => {
           });
         }
 
-        // 💬 Push new message
         chat.messages.push({
           senderId: userId,
           text: newMsg,
@@ -51,16 +65,48 @@ const initiallizeSocket = (server) => {
 
         await chat.save();
 
-        // 📡 Emit message to room
         io.to(roomId).emit("receiveMessage", {
           senderId: userId,
           message: newMsg,
         });
+
       } catch (err) {
         console.log("Message Save Error:", err.message);
       }
     });
+
+    // ==============================
+    // ❓ CHECK ONLINE STATUS
+    // ==============================
+    socket.on("checkOnlineStatus", ({ targetUserid }) => {
+      const isOnline = onlineUsers.has(targetUserid);
+
+      socket.emit("onlineStatus", {
+        userId: targetUserid,
+        online: isOnline,
+      });
+    });
+
+    // ==============================
+    // ❌ DISCONNECT LOGIC
+    // ==============================
+    socket.on("disconnect", () => {
+      if (onlineUsers.has(userId)) {
+        onlineUsers.get(userId).delete(socket.id);
+
+        if (onlineUsers.get(userId).size === 0) {
+          onlineUsers.delete(userId);
+
+          io.emit("userStatusChanged", {
+            userId,
+            online: false,
+          });
+        }
+      }
+
+      console.log("User Disconnected:", userId);
+    });
   });
 };
 
-module.exports = initiallizeSocket;
+module.exports = initializeSocket;

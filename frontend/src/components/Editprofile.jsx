@@ -52,7 +52,9 @@ const EditProfile = ({ user }) => {
       { withCredentials: true }
     );
 
-    dispatch(addUser(res?.data?.after));
+    console.log("API Response:", res.data);//printing data 
+
+    dispatch(addUser(res?.data?.data));
 
     toast.success(res?.data?.message || "Profile updated");
   } catch (err) {
