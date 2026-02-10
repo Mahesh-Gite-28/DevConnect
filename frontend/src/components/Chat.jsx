@@ -17,7 +17,8 @@ const Chat = () => {
   const [targetUser, setTargetUser] = useState(null);
 
   const socketRef = useRef(null);
-  const bottomRef = useRef(null);
+  const messageContainerRef = useRef(null);
+  const isInitialLoad = useRef(true);
 
   // =========================
   // 🔹 Fetch Target User Info
@@ -29,7 +30,7 @@ const Chat = () => {
       try {
         const res = await axios.get(
           `${BASE_URL}/profile/targetUser/${targetUserid}`,
-          { withCredentials: true },
+          { withCredentials: true }
         );
         setTargetUser(res.data);
       } catch (err) {
@@ -92,7 +93,6 @@ const Chat = () => {
 
     socket.on("receiveMessage", (data) => {
       setMessages((prev) => {
-        // prevent duplicate own message
         if (data.senderId?.toString() === userId?.toString()) {
           return prev;
         }
@@ -113,10 +113,21 @@ const Chat = () => {
   }, [userId, targetUserid]);
 
   // =========================
-  // 🔄 Auto Scroll
+  // 🔄 Controlled Auto Scroll
   // =========================
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!messageContainerRef.current) return;
+
+    // First load pe auto scroll nahi karenge
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    // Sirf message container ko scroll karenge
+    messageContainerRef.current.scrollTop =
+      messageContainerRef.current.scrollHeight;
+
   }, [messages]);
 
   // =========================
@@ -131,7 +142,6 @@ const Chat = () => {
       time: new Date(),
     };
 
-    // optimistic UI update
     setMessages((prev) => [...prev, messageObj]);
 
     socketRef.current.emit("sendMessage", {
@@ -153,10 +163,12 @@ const Chat = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-neutral-900 to-black text-white">
-      <div className="w-full max-w-2xl bg-neutral-900 rounded-2xl shadow-2xl flex flex-col h-[85vh]">
-        {/* 🔥 Chat Header */}
-        <div className="p-4 border-b border-neutral-700 flex items-center justify-between">
+    <div className="h-[calc(100vh-80px)] mt-20 bg-gradient-to-br from-black via-neutral-900 to-black text-white flex justify-center overflow-hidden">
+
+      <div className="w-full max-w-2xl bg-neutral-900 rounded-2xl shadow-2xl flex flex-col h-full overflow-hidden">
+
+        {/* Header */}
+        <div className="p-4 border-b border-neutral-700 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             {targetUser && (
               <img
@@ -184,15 +196,21 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* 🔥 Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Messages */}
+        <div
+          ref={messageContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+        >
           {messages.map((msg, index) => {
-            const isOwn = msg.senderId?.toString() === userId?.toString();
+            const isOwn =
+              msg.senderId?.toString() === userId?.toString();
 
             return (
               <div
                 key={index}
-                className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                className={`flex ${
+                  isOwn ? "justify-end" : "justify-start"
+                }`}
               >
                 <div
                   className={`px-4 py-2 rounded-2xl max-w-xs break-words ${
@@ -213,12 +231,10 @@ const Chat = () => {
               </div>
             );
           })}
-
-          <div ref={bottomRef}></div>
         </div>
 
-        {/* 🔥 Input Section */}
-        <div className="p-4 border-t border-neutral-700 flex gap-3">
+        {/* Input */}
+        <div className="p-4 border-t border-neutral-700 flex gap-3 flex-shrink-0">
           <input
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
