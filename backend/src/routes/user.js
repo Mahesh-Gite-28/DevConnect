@@ -149,7 +149,7 @@ userRouter.get("/user/search", userauth, async (req, res) => {
     const loggedInUserId = req.user._id;
     const { query } = req.query;
 
-    // 🔐 Basic validation
+    // 🔐 Validation
     if (!query) {
       return res.status(400).json({ message: "Search query required" });
     }
@@ -165,6 +165,31 @@ userRouter.get("/user/search", userauth, async (req, res) => {
     const limit = 9;
     const skip = (page - 1) * limit;
 
+    // 🔍 Split query words
+    const words = safeQuery.split(" ").filter(Boolean);
+
+    let nameCondition;
+
+    // 🟢 Single word search
+    if (words.length === 1) {
+      nameCondition = {
+        $or: [
+          { firstName: { $regex: "^" + words[0], $options: "i" } },
+          { lastName: { $regex: "^" + words[0], $options: "i" } }
+        ]
+      };
+    }
+
+    // 🟢 Two words search (rahul sharma)
+    else {
+      nameCondition = {
+        $and: [
+          { firstName: { $regex: "^" + words[0], $options: "i" } },
+          { lastName: { $regex: "^" + words[1], $options: "i" } }
+        ]
+      };
+    }
+
     // 1️⃣ Get all connection records of logged-in user
     const connectionRequests = await ConnectionRequest.find({
       $or: [
@@ -174,22 +199,16 @@ userRouter.get("/user/search", userauth, async (req, res) => {
     }).select("fromUserId toUserId");
 
     // 2️⃣ Build exclude list
-    const excludeUsers = connectionRequests.map((conn) => {
-      if (conn.fromUserId.toString() === loggedInUserId.toString()) {
-        return conn.toUserId;
-      }
-      return conn.fromUserId;
-    });
+    const excludeUsers = connectionRequests.map((conn) =>
+      conn.fromUserId.toString() === loggedInUserId.toString()
+        ? conn.toUserId
+        : conn.fromUserId
+    );
 
-    // 3️⃣ Prefix search (index friendly)
+    // 3️⃣ Final Query
     const users = await User.find({
       $and: [
-        {
-          $or: [
-            { firstName: { $regex: "^" + safeQuery, $options: "i" } },
-            { lastName: { $regex: "^" + safeQuery, $options: "i" } }
-          ]
-        },
+        nameCondition,
         {
           _id: { $nin: [...excludeUsers, loggedInUserId] }
         }
@@ -208,6 +227,7 @@ userRouter.get("/user/search", userauth, async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 });
+
 
 
 userRouter.get("/user/smart-matches", userauth, async (req, res) => {
