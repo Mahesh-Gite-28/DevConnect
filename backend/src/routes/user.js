@@ -10,7 +10,6 @@ const User = require("../Models/User");
 const USER_SAFE_DATA =
   "firstName lastName photoUrl age gender about skills membershipType membershipExpiry";
 
-
 userRouter.get("/user/requests/recieved", userauth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -32,7 +31,6 @@ userRouter.get("/user/requests/recieved", userauth, async (req, res) => {
 
 userRouter.get("/user/connections", userauth, async (req, res) => {
   try {
-
     const loggedInUser = req.user;
 
     const connections = await ConnectionRequest.find({
@@ -49,7 +47,6 @@ userRouter.get("/user/connections", userauth, async (req, res) => {
     })
       .populate("fromUserId", USER_SAFE_DATA)
       .populate("toUserId", USER_SAFE_DATA);
-
 
     const data = connections.map((row) => {
       if (row.fromUserId._id.toString() == loggedInUser._id.toString()) {
@@ -78,10 +75,7 @@ userRouter.get("/feed", userauth, async (req, res) => {
 
     // 1️⃣ Get all connection records of logged-in user
     const connectionRequests = await ConnectionRequest.find({
-      $or: [
-        { fromUserId: loggedInUserId },
-        { toUserId: loggedInUserId }
-      ]
+      $or: [{ fromUserId: loggedInUserId }, { toUserId: loggedInUserId }],
     }).select("fromUserId toUserId");
 
     // 2️⃣ Build hide list (ONLY the other user)
@@ -97,9 +91,9 @@ userRouter.get("/feed", userauth, async (req, res) => {
       {
         $match: {
           _id: {
-            $nin: [...hideUsersFromFeed, loggedInUserId]
-          }
-        }
+            $nin: [...hideUsersFromFeed, loggedInUserId],
+          },
+        },
       },
 
       // 🥇 Add priority field
@@ -109,20 +103,20 @@ userRouter.get("/feed", userauth, async (req, res) => {
             $switch: {
               branches: [
                 { case: { $eq: ["$membershipType", "Gold"] }, then: 1 },
-                { case: { $eq: ["$membershipType", "Silver"] }, then: 2 }
+                { case: { $eq: ["$membershipType", "Silver"] }, then: 2 },
               ],
-              default: 3
-            }
-          }
-        }
+              default: 3,
+            },
+          },
+        },
       },
 
       // 🔥 Sort by priority then newest users
       {
         $sort: {
           priority: 1,
-          createdAt: -1
-        }
+          createdAt: -1,
+        },
       },
 
       { $skip: skip },
@@ -138,24 +132,26 @@ userRouter.get("/feed", userauth, async (req, res) => {
           gender: 1,
           about: 1,
           skills: 1,
-          membershipType: 1
-        }
-      }
+          membershipType: 1,
+        },
+      },
     ]);
 
     res.status(200).json(feed);
-
   } catch (err) {
     console.error("FEED ERROR:", err);
     res.status(400).send("Error: " + err.message);
   }
 });
 
-
 userRouter.get("/user/search", userauth, async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
     const { query } = req.query;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = 9; // 3x3 grid ke liye perfect
+    const skip = (page - 1) * limit;
 
     if (!query || query.trim() === "") {
       return res.status(400).json({ message: "Search query required" });
@@ -163,10 +159,7 @@ userRouter.get("/user/search", userauth, async (req, res) => {
 
     // 1️⃣ Get all connections of logged in user
     const connectionRequests = await ConnectionRequest.find({
-      $or: [
-        { fromUserId: loggedInUserId },
-        { toUserId: loggedInUserId }
-      ]
+      $or: [{ fromUserId: loggedInUserId }, { toUserId: loggedInUserId }],
     }).select("fromUserId toUserId");
 
     // 2️⃣ Build exclude list
@@ -183,25 +176,24 @@ userRouter.get("/user/search", userauth, async (req, res) => {
         {
           $or: [
             { firstName: { $regex: "^" + query, $options: "i" } },
-            { lastName: { $regex: "^" + query, $options: "i" } }
-          ]
+            { lastName: { $regex: "^" + query, $options: "i" } },
+          ],
         },
         {
-          _id: { $nin: [...excludeUsers, loggedInUserId] }
-        }
-      ]
+          _id: { $nin: [...excludeUsers, loggedInUserId] },
+        },
+      ],
     })
-      .select("firstName lastName photoUrl age gender about skills membershipType")
-      .limit(10);
+      .select(
+        "firstName lastName photoUrl age gender about skills membershipType",
+      )
+      .skip(skip).limit(limit);
 
     res.status(200).json(users);
-
   } catch (err) {
     console.error("SEARCH ERROR:", err);
     res.status(400).json({ error: err.message });
   }
 });
-
-
 
 module.exports = userRouter;
