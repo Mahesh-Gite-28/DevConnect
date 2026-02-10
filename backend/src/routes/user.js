@@ -149,17 +149,28 @@ userRouter.get("/user/search", userauth, async (req, res) => {
     const loggedInUserId = req.user._id;
     const { query } = req.query;
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = 9; // 3x3 grid ke liye perfect
-    const skip = (page - 1) * limit;
-
-    if (!query || query.trim() === "") {
+    // 🔐 Basic validation
+    if (!query) {
       return res.status(400).json({ message: "Search query required" });
     }
 
-    // 1️⃣ Get all connections of logged in user
+    const safeQuery = query.trim();
+
+    if (safeQuery === "") {
+      return res.status(400).json({ message: "Search query required" });
+    }
+
+    // 📄 Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = 9;
+    const skip = (page - 1) * limit;
+
+    // 1️⃣ Get all connection records of logged-in user
     const connectionRequests = await ConnectionRequest.find({
-      $or: [{ fromUserId: loggedInUserId }, { toUserId: loggedInUserId }],
+      $or: [
+        { fromUserId: loggedInUserId },
+        { toUserId: loggedInUserId }
+      ]
     }).select("fromUserId toUserId");
 
     // 2️⃣ Build exclude list
@@ -170,30 +181,33 @@ userRouter.get("/user/search", userauth, async (req, res) => {
       return conn.fromUserId;
     });
 
-    // 3️⃣ Prefix search
+    // 3️⃣ Prefix search (index friendly)
     const users = await User.find({
       $and: [
         {
           $or: [
-            { firstName: { $regex: "^" + query, $options: "i" } },
-            { lastName: { $regex: "^" + query, $options: "i" } },
-          ],
+            { firstName: { $regex: "^" + safeQuery, $options: "i" } },
+            { lastName: { $regex: "^" + safeQuery, $options: "i" } }
+          ]
         },
         {
-          _id: { $nin: [...excludeUsers, loggedInUserId] },
-        },
-      ],
+          _id: { $nin: [...excludeUsers, loggedInUserId] }
+        }
+      ]
     })
       .select(
-        "firstName lastName photoUrl age gender about skills membershipType",
+        "firstName lastName photoUrl age gender about skills membershipType"
       )
-      .skip(skip).limit(limit);
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json(users);
+
   } catch (err) {
     console.error("SEARCH ERROR:", err);
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
+
 
 module.exports = userRouter;
