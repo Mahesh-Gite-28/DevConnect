@@ -210,4 +210,140 @@ userRouter.get("/user/search", userauth, async (req, res) => {
 });
 
 
+userRouter.get("/user/smart-matches", userauth, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const loggedInUserId = loggedInUser._id;
+
+    const mySkills = (loggedInUser.skills || []).map(s =>
+      s.toLowerCase()
+    );
+
+    if (mySkills.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // 📄 Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    // 1️⃣ Get interacted users
+    const connectionRequests = await ConnectionRequest.find({
+      $or: [
+        { fromUserId: loggedInUserId },
+        { toUserId: loggedInUserId }
+      ]
+    }).select("fromUserId toUserId");
+
+    const excludeUsers = connectionRequests.map((conn) =>
+      conn.fromUserId.toString() === loggedInUserId.toString()
+        ? conn.toUserId
+        : conn.fromUserId
+    );
+
+    // 2️⃣ Aggregation pipeline
+    const smartMatches = await User.aggregate([
+      {
+        $match: {
+          _id: {
+            $nin: [...excludeUsers, loggedInUserId]
+          }
+        }
+      },
+
+      // Convert skills to lowercase
+      {
+        $addFields: {
+          lowerSkills: {
+            $map: {
+              input: "$skills",
+              as: "skill",
+              in: { $toLower: "$$skill" }
+            }
+          }
+        }
+      },
+
+      // Calculate common skills
+      {
+        $addFields: {
+          commonSkills: {
+            $size: {
+              $setIntersection: ["$lowerSkills", mySkills]
+            }
+          },
+          totalSkills: {
+            $size: {
+              $setUnion: ["$lowerSkills", mySkills]
+            }
+          }
+        }
+      },
+
+      // Calculate Jaccard score
+      {
+        $addFields: {
+          matchScore: {
+            $cond: [
+              { $eq: ["$totalSkills", 0] },
+              0,
+              {
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ["$commonSkills", "$totalSkills"] },
+                      100
+                    ]
+                  },
+                  0
+                ]
+              }
+            ]
+          }
+        }
+      },
+
+      // Hide 0% matches
+      {
+        $match: {
+          matchScore: { $gt: 0 }
+        }
+      },
+
+      // Sort by score + newest
+      {
+        $sort: {
+          matchScore: -1,
+          createdAt: -1
+        }
+      },
+
+      { $skip: skip },
+      { $limit: limit },
+
+      {
+        $project: {
+          firstName: 1,
+          lastName: 1,
+          photoUrl: 1,
+          age: 1,
+          gender: 1,
+          about: 1,
+          skills: 1,
+          membershipType: 1,
+          matchScore: 1
+        }
+      }
+    ]);
+
+    res.status(200).json(smartMatches);
+
+  } catch (err) {
+    console.error("SMART MATCH ERROR:", err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+
 module.exports = userRouter;

@@ -9,7 +9,16 @@ import { removeRequests } from "../utils/requestSlice";
 import toast from "react-hot-toast";
 import { useState } from "react";
 
-import { Home, User, Users, Inbox, LogOut, Crown, Search } from "lucide-react";
+import {
+  Home,
+  User,
+  Users,
+  Inbox,
+  LogOut,
+  Crown,
+  Search,
+  Sparkles,
+} from "lucide-react";
 
 const Navbar = () => {
   const [searchText, setSearchText] = useState("");
@@ -62,7 +71,6 @@ const Navbar = () => {
       {/* Right Side */}
       {user && (
         <div className="flex items-center gap-4">
-
           <form
             onSubmit={handleSearch}
             className="hidden md:flex items-center bg-slate-900 border border-slate-700 rounded-lg px-3 py-1"
@@ -76,7 +84,7 @@ const Navbar = () => {
               className="bg-transparent outline-none text-sm text-white placeholder-gray-500 w-40"
             />
           </form>
-          
+
           <div className="dropdown dropdown-end">
             <div className="flex items-center gap-3">
               {/* Welcome Text + Badge */}
@@ -160,6 +168,16 @@ const Navbar = () => {
                 >
                   <Inbox size={16} className="mr-2" />
                   Requests
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/smart-matches"
+                  className="hover:bg-emerald-500 hover:text-black"
+                >
+                  <Sparkles size={16} className="mr-2" />
+                  Smart Matches
                 </Link>
               </li>
 

@@ -16,6 +16,7 @@ const UserCard = ({ data, onAction }) => {
     age,
     _id,
     membershipType,
+    matchScore,
   } = data;
 
   const dispatch = useDispatch();
@@ -25,15 +26,12 @@ const UserCard = ({ data, onAction }) => {
       await axios.post(
         BASE_URL + "/request/send/" + status + "/" + _id,
         {},
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
-      // 🔥 If Search page
       if (onAction) {
         onAction();
-      }
-      // 🔥 If Feed page
-      else {
+      } else {
         dispatch(removeonefeed(_id));
       }
     } catch (err) {
@@ -41,24 +39,31 @@ const UserCard = ({ data, onAction }) => {
     }
   };
 
+  // 🔥 Dynamic match color
+  const getMatchColor = (score) => {
+    if (score >= 70) return "bg-green-500";
+    if (score >= 40) return "bg-yellow-400";
+    return "bg-red-400";
+  };
+
   return (
     <div className="flex justify-center pt-12">
       <div
-        className={`card w-80 bg-base-300 shadow-md transition-all duration-300 overflow-hidden rounded-2xl
-  ${
-    membershipType === "Gold"
-      ? "border-2 border-yellow-400 shadow-yellow-500/30"
-      : membershipType === "Silver"
-        ? "border-2 border-gray-300 shadow-gray-400/20"
-        : "border border-neutral-700"
-  }`}
+        className={`card w-80 bg-base-300 shadow-md transition-all duration-300 overflow-hidden rounded-2xl relative
+        ${
+          membershipType === "Gold"
+            ? "border-2 border-yellow-400 shadow-yellow-500/30"
+            : membershipType === "Silver"
+            ? "border-2 border-gray-300 shadow-gray-400/20"
+            : "border border-neutral-700"
+        }`}
       >
-        {/* Badge Top Right */}
+        {/* 🏆 Membership Badge */}
         {membershipType === "Gold" && (
           <img
             src="/Gold.png"
             alt="Gold Badge"
-            className="absolute top-2 right-2 w-10"
+            className="absolute top-3 right-3 w-10 z-20"
           />
         )}
 
@@ -66,31 +71,34 @@ const UserCard = ({ data, onAction }) => {
           <img
             src="/Silver.png"
             alt="Silver Badge"
-            className="absolute top-2 right-2 w-10"
+            className="absolute top-3 right-3 w-10 z-20"
           />
         )}
 
-        <figure className="h-56">
+        {/* 📸 Image Section */}
+        <figure className="h-56 relative">
           <img
             src={photoUrl}
             alt="photo"
             className="w-full h-full object-cover"
           />
+
+          {/* 🔥 Match Score Overlay */}
+          {matchScore !== undefined && (
+            <div
+              className={`absolute top-3 left-3 ${getMatchColor(
+                matchScore
+              )} text-black text-sm font-bold px-4 py-1 rounded-full shadow-xl z-20`}
+            >
+              {matchScore}% Match
+            </div>
+          )}
         </figure>
 
+        {/* 📝 Body */}
         <div className="card-body">
           <h2 className="card-title flex items-center gap-2 flex-wrap">
             {firstName} {lastName}
-            {membershipType === "Gold" && (
-              <span className="text-yellow-400 font-bold text-sm">
-                Gold Member
-              </span>
-            )}
-            {membershipType === "Silver" && (
-              <span className="text-gray-400 font-bold text-sm">
-                Silver Member
-              </span>
-            )}
             {age && <div className="badge badge-secondary">{age}</div>}
           </h2>
 
@@ -110,6 +118,7 @@ const UserCard = ({ data, onAction }) => {
             </div>
           )}
 
+          {/* 🔘 Buttons */}
           <div className="card-actions justify-between pt-4">
             <button
               className="btn btn-error btn-sm"

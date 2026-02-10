@@ -13,6 +13,8 @@ import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFailed from "./components/PaymentFailed";
 import Chat from "./components/Chat";
 import Search from "./components/Search";
+import SmartMatches from "./components/SmartMatches";
+
 
 
 function App() {
@@ -34,6 +36,7 @@ function App() {
           <Route path="payment-cancel" element={<PaymentFailed />} />
           <Route path="chat/:targetUserid" element={<Chat />} />
           <Route path="search" element={<Search />} />
+          <Route path="smart-matches" element={<SmartMatches />} />
           <Route path="error" element={<Error />} />
 
           <Route path="*" element={<Error />} />
