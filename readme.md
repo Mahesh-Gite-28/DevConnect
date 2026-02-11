@@ -98,5 +98,5 @@ Gemini API is integrated to provide an AI assistant inside the platform for enha
 ## 👨‍💻 Author
 
 Mahesh Ramdas Gite  
-B.Tech Computer Science Engineering  
-Full-Stack Developer | AWS Deployed Project
+B.E Computer Science Engineering  
+Full-Stack Developer 
