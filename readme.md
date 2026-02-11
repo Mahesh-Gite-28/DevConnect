@@ -1,28 +1,102 @@
-# Deployment
+# DevConnect 🚀
 
-- Signup on AWS
-- Launch instance
-- chmod 400 <secret>.pem
-- ssh -i "DevConnect-secret.pem" ubuntu@ec2-43-204-96-49.ap-south-1.compute.amazonaws.com
-- Install Node version 16.17.0
-- Git clone
-- Frontend
-  - npm install -> dependencies install
-  - npm run build
-  - sudo apt update
-  - sudo apt install nginx
-  - sudo systemctl start nginx
-  - sudo systemctl enable nginx
-  - Copy code from dist(build files) to /var/www/html/
-  - sudo scp -r dist/\* /var/www/html/
-  - Enable port :80 of your instance
-- Backend
-  - updated DB password
-  - allowed ec2 instance public IP on mongodb server
-  - npm intsall pm2 -g
-  - pm2 start npm --name "DevConnect-backend" -- start
-  - pm2 logs
-  - pm2 list, pm2 flush <name> , pm2 stop <name>, pm2 delete <name>
-  - config nginx - /etc/nginx/sites-available/default
-  - restart nginx - sudo systemctl restart nginx
-  - Modify the BASEURL in frontend project to "/api"
+DevConnect is a full-stack developer networking platform where developers can connect, chat in real-time, and upgrade to premium memberships. The platform also integrates an AI assistant powered by Gemini API to enhance user interaction.
+
+This project is fully deployed on AWS EC2 with production-grade configuration including Nginx reverse proxy, PM2 process management, WebSocket support, Stripe payments with webhook, and SSL via Let's Encrypt.
+
+---
+
+## 🌐 Live Demo
+
+https://devconnect.duckdns.org
+
+---
+
+## 🧠 Core Features
+
+- 🔐 JWT Authentication (HTTP-only cookies)
+- 👤 Profile Management
+- 🔍 Developer Feed & Smart Matching
+- 🤝 Send & Accept Connection Requests
+- 💬 Real-time Chat using Socket.io
+- 🤖 AI Assistant (Gemini API Integration)
+- 💳 Premium Membership (Stripe Integration)
+- 🔔 Stripe Webhook Handling
+- 🔒 Secure Backend Routing
+- 🌍 Fully Deployed on AWS EC2
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- React (Vite)
+- Redux Toolkit
+- Tailwind CSS / DaisyUI
+- Axios
+- Socket.io-client
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB Atlas
+- Socket.io
+- JWT Authentication
+- Stripe Payment Gateway
+- Gemini API Integration
+
+### Deployment & Infrastructure
+- AWS EC2 (Ubuntu)
+- Nginx (Reverse Proxy)
+- PM2 (Process Manager)
+- Let's Encrypt SSL
+- WebSocket Support via Nginx Upgrade Headers
+
+---
+
+## 🏗 Architecture Overview
+
+User (Browser)  
+⬇  
+HTTPS (SSL)  
+⬇  
+Nginx (Reverse Proxy)  
+⬇  
+Backend (Node.js running on port 7777 via PM2)  
+⬇  
+MongoDB Atlas  
+
+WebSocket connections are proxied via Nginx to backend server.
+
+---
+
+## 💳 Payment System
+
+- Stripe integration
+- Secure webhook handling
+- Premium membership plans (Silver / Gold)
+- Payment success & failure handling
+
+---
+
+## 🤖 AI Integration
+
+Gemini API is integrated to provide an AI assistant inside the platform for enhanced user interaction.
+
+---
+
+## 🚀 Deployment Summary
+
+- Backend runs on port 7777
+- Nginx serves frontend static files from `/var/www/html`
+- `/api` routes proxied to backend
+- WebSocket upgrade headers configured
+- SSL configured via Certbot (Let’s Encrypt)
+
+---
+
+## 👨‍💻 Author
+
+Mahesh Ramdas Gite  
+B.Tech Computer Science Engineering  
+Full-Stack Developer | AWS Deployed Project
