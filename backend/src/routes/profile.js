@@ -8,54 +8,99 @@ const userauth = require("../middlewares/auth");
 
 const { validateProfileEdits,validatePassword} = require("../utils/validation");
 
+const upload = require("../middlewares/upload");
+const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const s3 = require("../config/s3");
+
+
+
+const deleteOldImageFromS3 = async (imageUrl) => {
+  try {
+    if (!imageUrl) return;
+
+    const url = new URL(imageUrl);
+    const key = decodeURIComponent(url.pathname.substring(1));
+
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+      })
+    );
+  } catch (err) {
+    console.log("Error deleting old image:", err.message);
+  }
+};
+
+
+
 profileRouter.get("/profile/view", userauth, async (req, res) => {
   const user = req.user;
 
   res.send(user);
 });
 
-profileRouter.patch("/profile/edit", userauth, async (req, res) => {
-  try {
-    if (!validateProfileEdits(req.body)) {
-      throw new Error("Edits not allowed");
-    }
+profileRouter.patch(
+  "/profile/edit",
+  userauth,
+  upload.single("profilePic"),
+  async (req, res) => {
+    try {
+      const loggedInUser = req.user;
 
-    const loggedInUser = req.user;
+      // 🔥 If new image uploaded
+      if (req.file) {
+        const oldPhoto = loggedInUser.photoUrl;
 
-    const allowedFields = [
-      "firstName",
-      "lastName",
-      "age",
-      "gender",
-      "photoUrl",
-      "skills",
-      "about"
-    ];
+        if (
+          oldPhoto &&
+          oldPhoto !== process.env.DEFAULT_PROFILE_PHOTO &&
+          oldPhoto.includes(process.env.AWS_BUCKET_NAME)
+        ) {
+          await deleteOldImageFromS3(oldPhoto);
+        }
 
-    Object.keys(req.body).forEach((field) => {
-      if (
-        allowedFields.includes(field) &&
-        req.body[field] !== "" &&
-        req.body[field] !== null &&
-        req.body[field] !== undefined
-      ) {
-        loggedInUser[field] = req.body[field];
+        loggedInUser.photoUrl = req.file.location;
       }
-    });
 
-    await loggedInUser.save();
+      const allowedFields = [
+        "firstName",
+        "lastName",
+        "age",
+        "gender",
+        "skills",
+        "about",
+      ];
 
-    res.json({
-      message: `${loggedInUser.firstName}, your profile updated successfully`,
-      data: loggedInUser,
-    });
-  } catch (err) {
-    console.log("EDIT PROFILE ERROR:", err);
-    res.status(400).json({
-      error: err.message || "Profile update failed",
-    });
+      Object.keys(req.body).forEach((field) => {
+        if (
+          allowedFields.includes(field) &&
+          req.body[field] !== "" &&
+          req.body[field] !== null &&
+          req.body[field] !== undefined
+        ) {
+          loggedInUser[field] =
+            field === "skills"
+              ? JSON.parse(req.body[field])
+              : req.body[field];
+        }
+      });
+
+      await loggedInUser.save();
+
+      res.json({
+        message: `${loggedInUser.firstName}, your profile updated successfully`,
+        data: loggedInUser,
+      });
+    } catch (err) {
+      console.log("EDIT PROFILE ERROR:", err);
+      res.status(400).json({
+        error: err.message || "Profile update failed",
+      });
+    }
   }
-});
+);
+
 
 
 profileRouter.patch("/profile/password", userauth, async (req, res) => {

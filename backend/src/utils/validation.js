@@ -32,7 +32,6 @@ const validateProfileEdits = (reqBody) => {
   "gender",
   "skills",
   "about",
-  "photoUrl",
 ];
 
   return Object.keys(reqBody).every((key) =>
