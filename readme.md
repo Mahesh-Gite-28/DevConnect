@@ -8,7 +8,7 @@ This project is fully deployed on AWS EC2 with production-grade configuration in
 
 ## 🌐 Live Demo
 
-https://devconnect.duckdns.org
+https://devtinder-connect.duckdns.org
 
 ---
 
