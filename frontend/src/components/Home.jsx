@@ -52,7 +52,7 @@ const Home = () => {
   const userdata = useSelector((store) => store.user);
 
   const [displayText, setDisplayText] = useState("");
-  const fullText = "Welcome to DevTinder ✨";
+  const fullText = "Welcome to DevConnect ✨";
   const speed = 100;
 
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -144,7 +144,7 @@ const Home = () => {
       >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-100 mb-12">
-            Why Choose DevTinder?
+            Why Choose DevConnect?
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

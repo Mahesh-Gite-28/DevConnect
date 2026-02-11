@@ -53,7 +53,7 @@ const PaymentFailed = () => {
         {/* Footer */}
         <p className="text-xs text-gray-400 mt-6">
           Need help? Contact  
-          <span className="text-primary font-medium"> support@devtinder.com</span>
+          <span className="text-primary font-medium"> support@DevConnect.com</span>
         </p>
       </div>
     </div>

@@ -11,11 +11,11 @@ const Footer = () => {
           {/* Left Section */}
           <div className="flex flex-col items-center md:items-start">
             <h2 className="text-2xl font-bold tracking-tight text-white">
-              Dev<span className="text-emerald-400">Tinder</span>
+              Dev<span className="text-emerald-400">Connect</span>
             </h2>
 
             <p className="mt-3 text-sm text-slate-400 max-w-sm leading-relaxed">
-              DevTinder is a platform built for developers to connect,
+              DevConnect is a platform built for developers to connect,
               collaborate, and build side projects together. Whether you're
               looking for a co-founder, mentor, or teammate — this is your space.
             </p>
@@ -72,7 +72,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500 text-center md:text-left">
-          <p>© {new Date().getFullYear()} DevTinder. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} DevConnect. All rights reserved.</p>
 
           <p>
             Built by{" "}

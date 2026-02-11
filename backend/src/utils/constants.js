@@ -16,7 +16,7 @@ const MEMBERSHIP_PLANS = {
         name: "Gold Membership",
         price: 999,
         period: "6 months",
-        description: "Unlimited requests, DevTinder Badge, Profile Priority"
+        description: "Unlimited requests, DevConnect Badge, Profile Priority"
     }
 }
 

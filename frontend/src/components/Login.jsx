@@ -83,7 +83,7 @@ const Login = () => {
               <p className="text-slate-400 mt-1 text-sm">
                 {isLogin
                   ? "Login to continue your journey"
-                  : "Join DevTinder and start connecting"}
+                  : "Join DevConnect and start connecting"}
               </p>
             </div>
 

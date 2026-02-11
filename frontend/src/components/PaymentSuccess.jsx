@@ -23,7 +23,7 @@ const PaymentSuccess = () => {
 
         {/* Description */}
         <p className="text-gray-500 mt-3">
-          Thank you for upgrading your <span className="font-semibold text-primary">DevTinder</span> membership.
+          Thank you for upgrading your <span className="font-semibold text-primary">DevConnect</span> membership.
         </p>
 
         {/* Info Box */}
